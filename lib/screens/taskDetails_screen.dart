@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:googleapis/calendar/v3.dart' as google_calendar;
-import 'package:todoes/services/google_calendar_service.dart';
 
 class TaskDetailScreen extends StatelessWidget {
   final String taskId;
@@ -96,36 +94,6 @@ class TaskDetailScreen extends StatelessWidget {
       },
     );
   }
-
-  Future<void> syncTaskToGoogleCalendar(
-      BuildContext context, String title, String description) async {
-    final googleCalendarService = GoogleCalendarService();
-    var calendarApi = await googleCalendarService.authenticate();
-
-    if (calendarApi != null) {
-      var event = google_calendar.Event()
-        ..summary = title
-        ..description = description
-        ..start = google_calendar.EventDateTime(
-            dateTime: DateTime.now(), timeZone: "GMT")
-        ..end = google_calendar.EventDateTime(
-            dateTime: DateTime.now().add(const Duration(hours: 1)),
-            timeZone: "GMT");
-
-      try {
-        await calendarApi.events.insert(event, "primary");
-        // print("Task added to Google Calendar successfully!");
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Task synced to Google Calendar")),
-        );
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error syncing to Google Calendar: $e")),
-        );
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -177,7 +145,7 @@ class TaskDetailScreen extends StatelessWidget {
                         Text(
                           task['title'],
                           style:
-                          Theme.of(context).textTheme.headline5!.copyWith(
+                          Theme.of(context).textTheme.headlineSmall!.copyWith(
                             fontWeight: FontWeight.bold,
                             color: Colors.blueAccent,
                           ),
@@ -186,28 +154,12 @@ class TaskDetailScreen extends StatelessWidget {
                         Text(
                           task['description'],
                           style:
-                          Theme.of(context).textTheme.bodyText1!.copyWith(
+                          Theme.of(context).textTheme.bodyLarge?.copyWith(
                             fontSize: 16,
                             color: Colors.grey[800],
                           ),
                         ),
                         const SizedBox(height: 20),
-                        ElevatedButton.icon(
-                          onPressed: () => syncTaskToGoogleCalendar(
-                              context, task['title'], task['description']),
-                          icon: const Icon(
-                            Icons.calendar_today,
-                            color: Colors.white,
-                          ),
-                          label: const Text(
-                            "Sync to Google Calendar",
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
-                            textStyle: const TextStyle(fontSize: 16),
-                          ),
-                        ),
                       ],
                     ),
                   ),
